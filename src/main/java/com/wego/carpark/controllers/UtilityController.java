@@ -3,7 +3,7 @@ package com.wego.carpark.controllers;
 import com.wego.carpark.services.CarParkAvailabilityUpdateService;
 import com.wego.carpark.services.CarParkImportService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -19,7 +19,7 @@ public class UtilityController {
         this.carParkAvailabilityUpdateService = carParkAvailabilityUpdateService;
     }
 
-    @PostMapping("/import-carparks")
+    @GetMapping("/import-carparks")
     public ResponseEntity<?> importCarParks(
             @RequestParam(defaultValue = "data/carparks.csv") String path) {
         try {
@@ -29,7 +29,8 @@ public class UtilityController {
             return ResponseEntity.badRequest().body("Import failed: " + e.getMessage());
         }
     }
-    @PostMapping("/update-availability")
+
+    @GetMapping("/update-availability")
     public ResponseEntity<?> updateAvailability() {
         var result = carParkAvailabilityUpdateService.updateOnce();
         return ResponseEntity.ok(result);
