@@ -1,7 +1,6 @@
 services:
   db:
     image: postgres:16
-    container_name: carparks-db
     restart: always
     environment:
       POSTGRES_DB: ${DB_NAME}
@@ -11,7 +10,6 @@ services:
       - "5432:5432"
   app:
     build: .
-    container_name: carpark-app
     depends_on:
       - db
     environment:
@@ -31,7 +29,7 @@ services:
     command: >
       "until curl -sf http://app:8080/actuator/health; do echo 'waiting app'; sleep 2; done &&
        echo 'running import' &&
-       curl -s -X POST http://app:8080/api/v1/util/import-carparks &&
+       curl -s -X GET http://app:8080/api/v1/util/import-carparks &&
        echo 'running availability' &&
-       curl -s -X POST http://app:8080/api/v1/util/update-availability &&
+       curl -s -X GET http://app:8080/api/v1/util/update-availability &&
        echo 'done'"

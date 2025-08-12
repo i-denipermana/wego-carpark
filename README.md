@@ -11,6 +11,7 @@ This is a Java-based API-only application for returning the closest car parks to
 - [Tech Stack](#tech-stack)
 - [How to Run](#how-to-run)
 - [API Endpoints](#api-endpoints)
+- [API Documentation](#api-documentation)
 - [Assumptions & Decisions](#assumptions--decisions)
 - [Testing](#testing)
 - [Improvements & Tradeoffs](#improvements--tradeoffs)
@@ -31,8 +32,6 @@ This application exposes an endpoint that, given a latitude and longitude, retur
 - Validates inputs, returns 400 for missing parameters
 
 ---
-
-## Development Approach
 
 ## Development Approach
 
@@ -109,7 +108,22 @@ This approach ensured the codebase was modular, testable, and easy to run locall
 git clone https://github.com/i.denipermana/wego-carparks.git
 cd wego-carparks
 ```
-### 3. Import Car Park Data
+
+### 3.Before running the application (locally or via Docker), copy the example environment file and adjust values if needed:
+
+```bash
+cp .env.example .env
+```
+
+### 4. Build and Run the Application
+
+#### Using Docker Compose
+
+```bash
+docker-compose up --build -d
+```
+
+### 4. Import Car Park Data
 - The API will be accessible at `http://localhost:8080`
 
 ```bash
@@ -165,6 +179,19 @@ curl -X 'GET' \
 ]
 ```
 - Returns HTTP 400 if latitude or longitude is missing.
+
+## API Documentation
+
+Interactive API documentation is available via Swagger UI once the application is running:
+
+**Local (Docker or non-Docker run)**  
+[http://localhost:8080/swagger-ui/index.html](http://localhost:8080/swagger-ui/index.html)
+
+Swagger UI provides:
+
+- List of all available endpoints
+- Request/response schema examples
+- Ability to test requests directly from the browser
 
 ## Assumptions & Decisions
 - Used Spring Boot for rapid REST API development and easy dependency management.
