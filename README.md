@@ -7,6 +7,7 @@ This is a Java-based API-only application for returning the closest car parks to
 ## Table of Contents
 
 - [Overview](#overview)
+- [Development Approach](#development-approach)
 - [Tech Stack](#tech-stack)
 - [How to Run](#how-to-run)
 - [API Endpoints](#api-endpoints)
@@ -30,6 +31,62 @@ This application exposes an endpoint that, given a latitude and longitude, retur
 - Validates inputs, returns 400 for missing parameters
 
 ---
+
+## Development Approach
+
+## Development Approach
+
+The solution was built in an iterative and test-driven manner, following these key steps:
+
+1. **Understanding Requirements**
+
+- Reviewed Wego’s exercise specification and clarified functional and non-functional requirements.
+- Identified core deliverables: CSV import, live availability update, nearest car park search API, and Dockerized setup.
+
+2. **Designing the Architecture**
+
+- Selected **Spring Boot** for its mature ecosystem and ease of integration with PostgreSQL and REST APIs.
+- Chose **PostgreSQL** as the primary store with separate tables for static car park metadata and dynamic availability
+  data.
+- Applied a service-oriented structure: `controller → service → repository`.
+
+3. **Data Model & Persistence**
+
+- Modeled `CarPark` and `CarParkAvailability` as separate entities linked by a foreign key.
+- Added database constraints (PK/unique) to enforce data integrity.
+- Designed idempotent upsert operations for both static and live data imports.
+
+4. **Feature Implementation**
+
+- **CSV Import:** Implemented using Apache Commons CSV with header validation and SVY21 → WGS84 conversion.
+- **Availability Update:** Integrated with the Data.gov.sg API and implemented upsert logic to merge data.
+- **Nearest Car Parks Endpoint:** Used Haversine formula to calculate distances and applied filtering, sorting, and
+  pagination.
+
+5. **Validation & Error Handling**
+
+- Added request parameter validation for required fields and value ranges.
+- Implemented a global exception handler to return consistent JSON error responses.
+
+6. **Testing Strategy**
+
+- **Unit Tests:** Validated service logic (distance calculation, merging datasets).
+- **Integration Tests:** Verified full endpoint behavior with seeded data.
+- **Repository Tests:** Ensured DB constraints and queries worked as expected.
+- **Optional:** Used Testcontainers to spin up PostgreSQL for isolated integration tests.
+
+7. **Containerization & Environment Setup**
+
+- Created a multi-stage Dockerfile for efficient builds.
+- Added Docker Compose to orchestrate the app and database with `.env` support.
+- Enabled optional startup scripts to run imports automatically in development.
+
+8. **Documentation**
+
+- Wrote a detailed README with setup steps, API documentation, troubleshooting tips, and assumptions.
+- Documented AI tool usage and prompts for transparency.
+
+This approach ensured the codebase was modular, testable, and easy to run locally or in a containerized environment.
 
 ## Tech Stack
 
