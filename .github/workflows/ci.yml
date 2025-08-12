@@ -37,7 +37,6 @@ jobs:
     - name: Run tests
       run: mvn test
       env:
-        SPRING_PROFILES_ACTIVE: test
         DB_HOST: localhost
         DB_PORT: 5432
         DB_NAME: test_db
