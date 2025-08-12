@@ -41,7 +41,7 @@ jobs:
         DB_PORT: 5432
         DB_NAME: test_db
         DB_USERNAME: postgres
-        DS_PASSWORD: test
+        DB_PASSWORD: test
     
     - name: Build with Maven
       run: mvn clean package -DskipTests
