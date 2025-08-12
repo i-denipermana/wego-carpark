@@ -37,11 +37,12 @@ jobs:
     - name: Run tests
       run: mvn test
       env:
+        SPRING_PROFILES_ACTIVE: test
         DB_HOST: localhost
         DB_PORT: 5432
         DB_NAME: test_db
         DB_USERNAME: postgres
-        DB_PASSWORD: test
+        DS_PASSWORD: test
     
     - name: Build with Maven
       run: mvn clean package -DskipTests
@@ -51,12 +52,19 @@ jobs:
       if: always()
       with:
         name: test-results
-        path: target/surefire-reports/
+        path: |
+          **/target/surefire-reports/**
+          **/target/failsafe-reports/**
+        if-no-files-found: ignore
 
   build:
     needs: test
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
+    
+    permissions:
+      contents: read
+      packages: write
     
     steps:
     - uses: actions/checkout@v4
@@ -69,15 +77,21 @@ jobs:
         cache: maven
     
     - name: Build Docker image
-      run: docker build -t carpark-api:${{ github.sha }} .
+      run: |
+        OWNER_LC=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+        IMAGE_NAME=ghcr.io/${OWNER_LC}/carpark-api
+        docker build -t ${IMAGE_NAME}:latest -t ${IMAGE_NAME}:${{ github.sha }} .
     
-    - name: Log in to Docker Hub
+    - name: Log in to GHCR
       uses: docker/login-action@v3
       with:
-        username: ${{ secrets.DOCKER_USERNAME }}
-        password: ${{ secrets.DOCKER_PASSWORD }}
+        registry: ghcr.io
+        username: ${{ github.repository_owner }}
+        password: ${{ secrets.GITHUB_TOKEN }}
     
     - name: Push Docker image
       run: |
-        docker tag carpark-api:${{ github.sha }} ${{ secrets.DOCKER_USERNAME }}/carpark-api:latest
-        docker push ${{ secrets.DOCKER_USERNAME }}/carpark-api:latest
+        OWNER_LC=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+        IMAGE_NAME=ghcr.io/${OWNER_LC}/carpark-api
+        docker push ${IMAGE_NAME}:latest
+        docker push ${IMAGE_NAME}:${{ github.sha }}
