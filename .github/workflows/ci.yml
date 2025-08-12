@@ -42,7 +42,6 @@ jobs:
         DB_NAME: test_db
         DB_USERNAME: postgres
         DB_PASSWORD: test
-        SPRING_PROFILES_ACTIVE: test
     
     - name: Build with Maven
       run: mvn clean package -DskipTests
