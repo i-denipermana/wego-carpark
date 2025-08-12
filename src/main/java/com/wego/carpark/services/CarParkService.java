@@ -4,7 +4,6 @@ import com.wego.carpark.dto.responses.CarParkResponse;
 import com.wego.carpark.entities.CarPark;
 import com.wego.carpark.entities.CarParkAvailability;
 import com.wego.carpark.repositories.CarParkAvailabilityRepository;
-import com.wego.carpark.repositories.CarParkRepository;
 import com.wego.carpark.utils.DistanceUtil;
 import org.springframework.stereotype.Service;
 
@@ -15,9 +14,9 @@ import java.util.List;
 @Service
 public class CarParkService {
 
-    private CarParkAvailabilityRepository carParkAvailabilityRepository;
+    private final CarParkAvailabilityRepository carParkAvailabilityRepository;
 
-    public CarParkService(CarParkRepository carParkRepository, CarParkAvailabilityRepository carParkAvailabilityRepository) {
+    public CarParkService(CarParkAvailabilityRepository carParkAvailabilityRepository) {
         this.carParkAvailabilityRepository = carParkAvailabilityRepository;
     }
 

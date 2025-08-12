@@ -1,12 +1,10 @@
 package com.wego.carpark.services;
 
 import com.wego.carpark.entities.CarPark;
-import com.wego.carpark.exceptions.ImportValidationException;
 import com.wego.carpark.repositories.CarParkRepository;
 import com.wego.carpark.utils.CoordinateConverter;
 import jakarta.transaction.Transactional;
 import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVFormat.Builder;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 import org.springframework.core.io.ClassPathResource;
@@ -20,7 +18,7 @@ import java.util.List;
 @Service
 public class CarParkImportService {
     private final CarParkRepository carParkRepository;
-    private static final List<String> REQUIRED_HEADERS = List.of("car_park_no", "address", "x_coord", "y_coord");
+
     public CarParkImportService(CarParkRepository carParkRepository) {
         this.carParkRepository = carParkRepository;
     }
@@ -84,14 +82,6 @@ public class CarParkImportService {
         }
     }
 
-
-    private static String getOrNull(CSVRecord r, String col) {
-        return r.isMapped(col) ? r.get(col) : null;
-    }
-
-    private static int parseIntSafe(String s, int def) {
-        try { return Integer.parseInt(s); } catch (Exception e) { return def; }
-    }
 
     public record ImportResult(int totalRows, int convertedRows, int skippedRows) {}
 

@@ -1,7 +1,10 @@
 package com.wego.carpark.exceptions;
 
+import lombok.Getter;
+
 import java.util.List;
 
+@Getter
 public class ImportValidationException extends RuntimeException {
     private final List<String> missingHeaders;
     private final List<String> receivedHeaders;
@@ -11,6 +14,4 @@ public class ImportValidationException extends RuntimeException {
         this.missingHeaders = missingHeaders;
         this.receivedHeaders = receivedHeaders;
     }
-    public List<String> getMissingHeaders() { return missingHeaders; }
-    public List<String> getReceivedHeaders() { return receivedHeaders; }
 }

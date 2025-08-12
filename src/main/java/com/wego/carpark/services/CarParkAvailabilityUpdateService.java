@@ -31,6 +31,14 @@ public class CarParkAvailabilityUpdateService {
         this.availabilityRepository = availabilityRepository;
     }
 
+    private static int parseIntSafe(String s) {
+        try {
+            return Integer.parseInt(s);
+        } catch (Exception e) {
+            return -1;
+        }
+    }
+
     @Transactional
     public Result updateOnce() {
         AvailabilityApiDTO dto = webClient.get()
@@ -51,14 +59,14 @@ public class CarParkAvailabilityUpdateService {
         AtomicInteger skippedUnknownCarpark = new AtomicInteger();
         AtomicInteger errors = new AtomicInteger();
 
-        item.getCarpark_data().forEach(cp -> {
-            String id = cp.getCarpark_number();
+        item.getCarparkData().forEach(cp -> {
+            String id = cp.getCarparkNumber();
             if (id == null || id.isBlank()) return;
-            var info = (cp.getCarpark_info() == null || cp.getCarpark_info().isEmpty())
+            var info = (cp.getCarparkInfo() == null || cp.getCarparkInfo().isEmpty())
                     ? null
-                    : cp.getCarpark_info().get(0);
+                    : cp.getCarparkInfo().get(0);
 
-            int available = parseIntSafe(info != null ? info.getLots_available() : null, -1);
+            int available = parseIntSafe(info != null ? info.getLotsAvailable() : null);
 
             if (!carParkRepository.existsById(id)) {
                 skippedUnknownCarpark.incrementAndGet();
@@ -78,10 +86,6 @@ public class CarParkAvailabilityUpdateService {
         });
 
         return new Result(processed.get(), skippedUnknownCarpark.get(), errors.get(), "ok");
-    }
-
-    private static int parseIntSafe(String s, int def) {
-        try { return Integer.parseInt(s); } catch (Exception e) { return def; }
     }
 
     private static Instant parseInstantSafe(String s) {

@@ -4,10 +4,9 @@ import com.wego.carpark.dto.responses.CarParkResponse;
 import com.wego.carpark.entities.CarPark;
 import com.wego.carpark.entities.CarParkAvailability;
 import com.wego.carpark.repositories.CarParkAvailabilityRepository;
-import com.wego.carpark.repositories.CarParkRepository;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
@@ -15,13 +14,12 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class CarParkServiceTest {
-
-    @Mock
-    private CarParkRepository carParkRepository;
 
     @Mock
     private CarParkAvailabilityRepository carParkAvailabilityRepository;
@@ -31,7 +29,7 @@ class CarParkServiceTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        carParkService = new CarParkService(carParkRepository, carParkAvailabilityRepository);
+        carParkService = new CarParkService(carParkAvailabilityRepository);
     }
 
     @Test
@@ -112,7 +110,7 @@ class CarParkServiceTest {
         CarParkAvailability availability1 = createAvailability(carPark1, 10);
 
         when(carParkAvailabilityRepository.findByAvailableLotsGreaterThan(0))
-                .thenReturn(Arrays.asList(availability1));
+                .thenReturn(List.of(availability1));
 
         // When - page 3, per page 1 (only 1 item available)
         List<CarParkResponse> result = carParkService.findNearestCarParks(0.0, 0.0, 3, 1);
@@ -129,7 +127,7 @@ class CarParkServiceTest {
         CarParkAvailability availability = createAvailability(carPark, 10);
 
         when(carParkAvailabilityRepository.findByAvailableLotsGreaterThan(0))
-                .thenReturn(Arrays.asList(availability));
+                .thenReturn(List.of(availability));
 
         // When
         List<CarParkResponse> result = carParkService.findNearestCarParks(0.0, 0.0, 1, 10);

@@ -16,6 +16,22 @@ spring:
       ddl-auto: ${HIBERNATE_DDL_AUTO:update}
     properties:
       hibernate.dialect: org.hibernate.dialect.PostgreSQLDialect
-    show-sql: true
+    show-sql: false
+
+logging:
+  level:
+    com.wego.carpark: DEBUG
+    org.springframework.web: WARN
+    org.hibernate.SQL: WARN
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
 carpark:
-  availability-url: https://api.data.gov.sg/v1/transport/carpark-availability
+  availability-url: ${AVAILABILITY_URL:https://api.data.gov.sg/v1/transport/carpark-availability}
+  rate-limit:
+    requests-per-minute: ${RATE_LIMIT_REQUESTS_PER_MINUTE:100}
