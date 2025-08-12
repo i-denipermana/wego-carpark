@@ -3,13 +3,14 @@ package com.wego.carpark.services;
 import com.wego.carpark.entities.CarPark;
 import com.wego.carpark.repositories.CarParkRepository;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.core.io.ClassPathResource;
 
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -47,7 +48,7 @@ class CarParkImportServiceTest {
         String emptyFile = "data/empty.csv";
         
         // Create a mock resource that exists but is empty
-        when(carParkRepository.saveAll(any())).thenReturn(Arrays.asList());
+        when(carParkRepository.saveAll(any())).thenReturn(List.of());
 
         // When
         CarParkImportService.ImportResult result = carParkImportService.importFromCsv(emptyFile);
@@ -63,8 +64,8 @@ class CarParkImportServiceTest {
     void testImportFromCsv_SkipInvalidRows() throws Exception {
         // Given
         String invalidFile = "data/invalid.csv";
-        
-        when(carParkRepository.saveAll(any())).thenReturn(Arrays.asList());
+
+        when(carParkRepository.saveAll(any())).thenReturn(List.of());
 
         // When
         CarParkImportService.ImportResult result = carParkImportService.importFromCsv(invalidFile);
@@ -85,7 +86,7 @@ class CarParkImportServiceTest {
         existingCarPark.setId("TEST001");
         
         when(carParkRepository.findById("TEST001")).thenReturn(Optional.of(existingCarPark));
-        when(carParkRepository.saveAll(any())).thenReturn(Arrays.asList(existingCarPark));
+        when(carParkRepository.saveAll(any())).thenReturn(List.of(existingCarPark));
 
         // When
         CarParkImportService.ImportResult result = carParkImportService.importFromCsv(validFile);
@@ -103,7 +104,7 @@ class CarParkImportServiceTest {
         String largeFile = "data/large.csv";
         
         when(carParkRepository.findById(any())).thenReturn(Optional.empty());
-        when(carParkRepository.saveAll(any())).thenReturn(Arrays.asList());
+        when(carParkRepository.saveAll(any())).thenReturn(List.of());
 
         // When
         CarParkImportService.ImportResult result = carParkImportService.importFromCsv(largeFile);
@@ -119,8 +120,8 @@ class CarParkImportServiceTest {
     void testImportFromCsv_InvalidCoordinates() throws Exception {
         // Given
         String invalidCoordsFile = "data/invalid-coords.csv";
-        
-        when(carParkRepository.saveAll(any())).thenReturn(Arrays.asList());
+
+        when(carParkRepository.saveAll(any())).thenReturn(List.of());
 
         // When
         CarParkImportService.ImportResult result = carParkImportService.importFromCsv(invalidCoordsFile);
@@ -139,7 +140,7 @@ class CarParkImportServiceTest {
         String newCarParkFile = "data/new-carpark.csv";
         
         when(carParkRepository.findById("NEW001")).thenReturn(Optional.empty());
-        when(carParkRepository.saveAll(any())).thenReturn(Arrays.asList());
+        when(carParkRepository.saveAll(any())).thenReturn(List.of());
 
         // When
         CarParkImportService.ImportResult result = carParkImportService.importFromCsv(newCarParkFile);
@@ -161,7 +162,7 @@ class CarParkImportServiceTest {
         existingCarPark.setAddress("Old Address");
         
         when(carParkRepository.findById("EXIST001")).thenReturn(Optional.of(existingCarPark));
-        when(carParkRepository.saveAll(any())).thenReturn(Arrays.asList(existingCarPark));
+        when(carParkRepository.saveAll(any())).thenReturn(List.of(existingCarPark));
 
         // When
         CarParkImportService.ImportResult result = carParkImportService.importFromCsv(existingCarParkFile);
@@ -170,5 +171,51 @@ class CarParkImportServiceTest {
         assertTrue(result.convertedRows() > 0);
         verify(carParkRepository).findById("EXIST001");
         verify(carParkRepository, atLeastOnce()).saveAll(any());
+    }
+
+    @Test
+    @DisplayName("Should calculate total lots based on car park type and decks")
+    void testImportFromCsv_CalculateTotalLots() throws Exception {
+        // Given
+        when(carParkRepository.findById("TEST1")).thenReturn(Optional.empty());
+        when(carParkRepository.findById("TEST2")).thenReturn(Optional.empty());
+        when(carParkRepository.findById("TEST3")).thenReturn(Optional.empty());
+        when(carParkRepository.saveAll(any())).thenReturn(new ArrayList<>());
+
+        // When
+        CarParkImportService.ImportResult result = carParkImportService.importFromCsv("data/total-lots-test.csv");
+
+        // Then
+        assertEquals(3, result.totalRows());
+        assertEquals(3, result.convertedRows());
+        assertEquals(0, result.skippedRows());
+
+        ArgumentCaptor<List<CarPark>> captor = ArgumentCaptor.forClass(List.class);
+        verify(carParkRepository, times(1)).saveAll(captor.capture());
+
+        List<CarPark> savedCarParks = captor.getValue();
+        assertEquals(3, savedCarParks.size());
+
+        // Verify total lots calculation
+        CarPark multiStorey = savedCarParks.stream()
+                .filter(cp -> cp.getId().equals("TEST1"))
+                .findFirst()
+                .orElse(null);
+        assertNotNull(multiStorey);
+        assertEquals(600, multiStorey.getTotalLots()); // 8 decks * 75 = 600
+
+        CarPark basement = savedCarParks.stream()
+                .filter(cp -> cp.getId().equals("TEST2"))
+                .findFirst()
+                .orElse(null);
+        assertNotNull(basement);
+        assertEquals(75, basement.getTotalLots()); // 1 deck * 75 = 75 (decks take precedence)
+
+        CarPark surface = savedCarParks.stream()
+                .filter(cp -> cp.getId().equals("TEST3"))
+                .findFirst()
+                .orElse(null);
+        assertNotNull(surface);
+        assertEquals(100, surface.getTotalLots()); // Default for surface (0 decks)
     }
 }

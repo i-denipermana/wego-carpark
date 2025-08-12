@@ -69,6 +69,10 @@ public class CarParkImportService {
                     cp.setSvy21X(x);
                     cp.setSvy21Y(y);
 
+                    // Set a reasonable default for total lots based on car park type
+                    // This will be updated with actual data from the availability API
+                    cp.setTotalLots(calculateDefaultTotalLots(rec));
+
                     batch.add(cp);
                     if (batch.size() == 500) {
                         carParkRepository.saveAll(batch);
@@ -82,7 +86,34 @@ public class CarParkImportService {
         }
     }
 
+    private int calculateDefaultTotalLots(CSVRecord rec) {
+        try {
+            // Try to get car_park_decks first
+            String decksStr = rec.get("car_park_decks");
+            if (decksStr != null && !decksStr.trim().isEmpty()) {
+                int decks = Integer.parseInt(decksStr.trim());
+                if (decks > 0) {
+                    // Estimate: each deck typically has 50-100 lots
+                    return decks * 75; // Average of 75 lots per deck
+                }
+            }
+
+            // Fallback: estimate based on car park type
+            String carParkType = rec.get("car_park_type");
+            if (carParkType != null) {
+                return switch (carParkType.toUpperCase()) {
+                    case "MULTI-STOREY CAR PARK" -> 200; // Typical multi-storey car park
+                    case "BASEMENT CAR PARK" -> 150; // Typical basement car park
+                    case "SURFACE CAR PARK" -> 100; // Typical surface car park
+                    default -> 100; // Default fallback
+                };
+            }
+        } catch (Exception e) {
+            // If any parsing fails, use default
+        }
+
+        return 100; // Default fallback
+    }
 
     public record ImportResult(int totalRows, int convertedRows, int skippedRows) {}
-
 }

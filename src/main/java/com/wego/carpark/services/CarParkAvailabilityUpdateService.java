@@ -2,6 +2,7 @@ package com.wego.carpark.services;
 
 import com.wego.carpark.config.CarparkProperties;
 import com.wego.carpark.dto.requests.AvailabilityApiDTO;
+import com.wego.carpark.entities.CarPark;
 import com.wego.carpark.repositories.CarParkAvailabilityRepository;
 import com.wego.carpark.repositories.CarParkRepository;
 import jakarta.transaction.Transactional;
@@ -67,6 +68,7 @@ public class CarParkAvailabilityUpdateService {
                     : cp.getCarparkInfo().get(0);
 
             int available = parseIntSafe(info != null ? info.getLotsAvailable() : null);
+            int totalLots = parseIntSafe(info != null ? info.getTotalLots() : null);
 
             if (!carParkRepository.existsById(id)) {
                 skippedUnknownCarpark.incrementAndGet();
@@ -78,7 +80,18 @@ public class CarParkAvailabilityUpdateService {
             }
 
             try {
+                // Update availability
                 availabilityRepository.upsert(id, available, ts != null ? ts : Instant.now());
+
+                // Update total lots if we have valid data
+                if (totalLots > 0) {
+                    CarPark carPark = carParkRepository.findById(id).orElse(null);
+                    if (carPark != null && carPark.getTotalLots() == 0) {
+                        carPark.setTotalLots(totalLots);
+                        carParkRepository.save(carPark);
+                    }
+                }
+                
                 processed.incrementAndGet();
             } catch (Exception ex) {
                 errors.incrementAndGet();
