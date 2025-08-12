@@ -1,0 +1,46 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      idle-timeout: 300000
+      connection-timeout: 20000
+      max-lifetime: 1200000
+      pool-name: WegoCarParksHikariCP
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate.dialect: org.hibernate.dialect.PostgreSQLDialect
+    show-sql: false
+  security:
+    user:
+      name: ${API_USERNAME:admin}
+      password: ${API_PASSWORD:changeme}
+
+logging:
+  level:
+    com.wego.carpark: INFO
+    org.springframework.web: WARN
+    org.hibernate.SQL: WARN
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: when-authorized
+
+carpark:
+  availability-url: ${AVAILABILITY_API_URL:https://api.data.gov.sg/v1/transport/carpark-availability}
+  cache:
+    ttl: 300 # 5 minutes
+  rate-limit:
+    requests-per-minute: 100

@@ -9,16 +9,15 @@ import com.wego.carpark.utils.DistanceUtil;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 @Service
 public class CarParkService {
 
-    private CarParkRepository carParkRepository;
     private CarParkAvailabilityRepository carParkAvailabilityRepository;
 
     public CarParkService(CarParkRepository carParkRepository, CarParkAvailabilityRepository carParkAvailabilityRepository) {
-        this.carParkRepository = carParkRepository;
         this.carParkAvailabilityRepository = carParkAvailabilityRepository;
     }
 
@@ -37,7 +36,7 @@ public class CarParkService {
                             .availableLots(availability.getAvailableLots())
                             .distance(distance)
                             .build();
-                }).sorted().toList();
+                }).sorted(Comparator.comparingDouble(CarParkResponse::getDistance)).toList();
 
         int fromIndex = (page - 1) * perPage;
         int toIndex = Math.min(fromIndex + perPage, dtos.size());

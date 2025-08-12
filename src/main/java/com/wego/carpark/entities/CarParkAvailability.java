@@ -16,7 +16,7 @@ public class CarParkAvailability {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "car_park_id")
+    @JoinColumn(name = "car_park_id", unique = true)
     private CarPark carPark;
 
     private int availableLots;

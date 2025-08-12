@@ -10,6 +10,7 @@ COPY src ./src
 # Build the application (skip tests for speed; remove -DskipTests to run them)
 RUN mvn clean package -DskipTests
 
+
 # ---- Stage 2: Run ----
 FROM openjdk:21-jdk-slim
 

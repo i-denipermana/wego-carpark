@@ -1,0 +1,5 @@
+car_park_no,address,x_coord,y_coord
+TEST001,,12345.67,23456.78
+TEST002,Test Address,,23456.78
+TEST003,Test Address,12345.67,
+TEST004,,,
